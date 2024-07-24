@@ -16,17 +16,15 @@ function main(args::Vector{String})
     # convert to a matrix
     A = network2matrix(N);
     
-
     fileout = "results/"*basename(filein)*".csv";
-    node_names = [N.idxmap[i] for i in 1:length(N.idxmap)];
-
+    
     # estimates the fitness centrality
     if isdirected(N)
         Fout, Fin = asymmetricNHEFC(A);
-        df = DataFrame(node=node_names, fitness_out = Fout, fitness_in = Fin);
+        df = DataFrame(node=N.nodenames, fitness_out = Fout, fitness_in = Fin);
     else
         F = symmetricNHEFC(A);
-        df = DataFrame(node=node_names, fitness = F);
+        df = DataFrame(node=N.nodenames, fitness = F);
     end
 
     @info "Saving results into file \"$fileout\"";

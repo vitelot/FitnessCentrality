@@ -2,7 +2,7 @@ struct Network{T}
     directed::Bool;
     weighted::Bool;
     data::DataFrame;
-    idxmap::Dict{Int, T};
+    nodenames::Vector{T};
 end
 
 isdirected(N::Network) = N.directed;
@@ -66,7 +66,7 @@ function readNetwork(filein::String)
         WEIGHTED = true;
     end
 
-    return Network(DIRECTED, WEIGHTED, df, Dict{Int, column_types[1]}() );
+    return Network(DIRECTED, WEIGHTED, df, Vector{column_types[1]}() );
 end
 
 """
@@ -90,10 +90,10 @@ function network2matrix(N::Network)
         end
     end
 
-    # inverseIdx = Dict(value => key for (key, value) in Idx);
-    for (key,value) in Idx
-        N.idxmap[value] = key;
-    end
+    inverseIdx = Dict(value => key for (key, value) in Idx);
+
+    nodenames = [inverseIdx[i] for i in 1:length(inverseIdx)];
+    append!(N.nodenames, nodenames);
 
     A = zeros(length(nodeList), length(nodeList));
 
