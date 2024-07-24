@@ -130,16 +130,15 @@ end
 
 """
 Non-homogeneous fitness and complexity algorithm.\n
-Takes the matrix A, the inhomogeneous term δ and the required final relative error ϵ
-and delivers the number of iterations needed to converge, the fitness centrality.
+Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
+and delivers the fitness centrality.
 """
 function symmetricNHEFC(A::Matrix{T}; δ::Float64=1e-2, ϵ::Float64=1e-2) where T <:Real
-    @info "Calculating fitness centrality";
-    
+    @info "Calculating fitness centrality in the undirected case";
+
     c,p = size(A);
     err::Float64 = 1000.0;
     nr_of_iterations::Int = 0;
-
 
     F0 = ones(T,c);
     F1 = ones(T,c);
@@ -149,8 +148,52 @@ function symmetricNHEFC(A::Matrix{T}; δ::Float64=1e-2, ϵ::Float64=1e-2) where 
         err = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
         # @info err
         F0 = copy(F1);
+        if nr_of_iterations%1000 == 0
+            println("Iteration: $nr_of_iterations -- RelativeError: $err");
+        end
     end
 
-    nr_of_iterations, F1
+    println("The algorithm converged in $nr_of_iterations steps");
+    
+    F1
 end
 
+"""
+Non-homogeneous fitness and complexity algorithm.\n
+Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
+and delivers the fitness centrality.
+"""
+function asymmetricNHEFC(A::Matrix{T}; δ::Float64=1e-2, ϵ::Float64=1e-2) where T <:Real
+    @info "Calculating fitness centrality in the directed case";
+
+    c,p = size(A);
+    err::Float64 = 1000.0;
+    nr_of_iterations::Int = 0;
+
+    F0 = ones(T,c);
+    F1 = ones(T,c);
+    S0 = ones(T,c);
+    S1 = ones(T,c);
+
+    AT = A';
+
+    while err>ϵ
+        nr_of_iterations += 1;
+        F1 = δ .+ A  * inv.(S0);
+        S1 = δ .+ AT * inv.(F0);
+        err1 = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
+        err2 = maximum(abs.( (S1 ./ S0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
+        err = max(err1, err2);
+        # @info err
+
+        F0 = copy(F1);
+        S0 = copy(S1);
+        if nr_of_iterations%1000 == 0
+            println("Iteration: $nr_of_iterations -- RelativeError: $err");
+        end
+    end
+
+    println("The algorithm converged in $nr_of_iterations steps");
+    
+    F1,S1
+end
