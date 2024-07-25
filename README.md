@@ -14,6 +14,8 @@ A non-optimized Julia program to calculate fitness centrality in networks
    - Open a terminal or command prompt
    - Type `julia` and press Enter
    - You should see the Julia REPL (Read-Eval-Print Loop) start up
+5. Exit `julia` by pressing `<ctrl-d>`.
+
 
 ### 2. Set up the project
 
