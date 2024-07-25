@@ -19,20 +19,44 @@ A non-optimized Julia program to calculate fitness centrality in networks
 
 ### 2. Set up the project
 
-1. Open the command line interpreter with:
+After installing Julia, you need to set up the project environment. This process ensures that all required dependencies are installed and your project is isolated from other Julia projects.
+
+1. Open a terminal or command prompt.
+
+2. Navigate to the directory containing the FitnessCentrality project files.
+
+3. Start Julia in project mode by typing:
    ```
    julia --project
    ```
-2. Access the package manager by typing:
+   This command starts Julia and activates the project environment defined in the current directory.
+
+4. Once Julia starts, you'll see the Julia REPL (Read-Eval-Print Loop). It looks like this:
    ```
-   ]
+   julia>
    ```
-3. Run the `instantiate` command to download and install the required libraries:
+
+5. Enter the package manager mode by pressing `]`. The prompt will change to:
    ```
-   instantiate
+   (@v1.x) pkg>
    ```
-4. Exit the package manager by pressing `<backspace>`.
-5. Exit `julia` by pressing `<ctrl-d>`.
+   The `@v1.x` shows your Julia version number.
+
+6. In the package manager, run the `instantiate` command:
+   ```
+   (@v1.x) pkg> instantiate
+   ```
+   This command reads the `Project.toml` and `Manifest.toml` files in your project directory and installs all the required packages and their dependencies. It might take a few minutes, especially on the first run.
+
+7. Once the instantiation is complete, exit the package manager by pressing the Backspace key. This will return you to the Julia REPL.
+
+8. You can now exit Julia by pressing `Ctrl+D` or by typing:
+   ```
+   julia> exit()
+   ```
+
+After completing these steps, your project environment is set up and ready to use. You won't need to repeat this process unless you move the project to a new machine or update the project's dependencies.
+
 
 ## Input Files
 
