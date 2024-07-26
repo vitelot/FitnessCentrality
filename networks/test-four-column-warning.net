@@ -1,0 +1,9 @@
+% source,target,weight,extra
+one,two,3,12
+two,three,2,11
+three,four,5,1
+four,five,1,4
+five,six,2,5
+six,seven,5,1
+seven,eight,3,4
+eight,one,6,10
