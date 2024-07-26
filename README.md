@@ -14,7 +14,7 @@ A non-optimized Julia program to calculate fitness centrality in networks
    - Open a terminal or command prompt
    - Type `julia` and press Enter
    - You should see the Julia REPL (Read-Eval-Print Loop) start up
-5. Exit `julia` by pressing `<ctrl-d>`.
+5. Exit `julia` by pressing `<ctrl+d>`.
 
 
 ### 2. Set up the project
@@ -46,11 +46,11 @@ After installing Julia, you need to set up the project environment. This process
    ```
    (@v1.x) pkg> instantiate
    ```
-   This command reads the `Project.toml` and `Manifest.toml` files in your project directory and installs all the required packages and their dependencies. It might take a few minutes, especially on the first run.
+   This command reads the `Project.toml` file in your project directory, creates the `Manifest.toml` file, and installs all the required packages and their dependencies. It might take a few minutes, especially on the first run.
 
 7. Once the instantiation is complete, exit the package manager by pressing the Backspace key. This will return you to the Julia REPL.
 
-8. You can now exit Julia by pressing `Ctrl+D` or by typing:
+8. You can now exit Julia by pressing `ctrl+d` or by typing:
    ```
    julia> exit()
    ```
