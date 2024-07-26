@@ -8,7 +8,11 @@ end
 isdirected(N::Network) = N.directed;
 isweighted(N::Network) = N.weighted;
 
+"non-homogeneous term in the map"
+const DELTA   = 1e-2; 
 
+"relative error. Map converges if the maximum relative error between two iterations is less than EPSILON."
+const EPSILON = 1e-2; # 
 
 """
 Loads the network from an edge list and delivers a DataFrame.
@@ -31,8 +35,7 @@ function readNetwork(filein::String)
     println();
 
     if ncolumns < 2
-        println("Only one column found. We need at least two columns with node ids to create links.");
-        println("Exiting.");
+        @error("Only one column found. We need at least two columns with node ids to create links.\n\tExiting.");
         exit();
     end
 
@@ -45,7 +48,7 @@ function readNetwork(filein::String)
 
     answer = readline();
 
-    if answer == "y"
+    if answer == "y" || answer == "Y"
         println("Considering the network as directed");
         DIRECTED = true;
     else
@@ -60,7 +63,7 @@ function readNetwork(filein::String)
         rename!(df, [:from, :to, :weight]);
         WEIGHTED = true;
     else
-        println("More than three columns found: condidering the network as weighted and ignoring all but the first three columns");
+        @warn("More than three columns found: considering the network as weighted and ignoring all but the first three columns");
         select!(df, 1:3);
         rename!(df, [:from, :to, :weight]);
         WEIGHTED = true;
@@ -79,20 +82,18 @@ function network2matrix(N::Network)
     nodeList = unique(sort([df.from; df.to]));
 
     Idx = Dict{eltype(nodeList), Int}();
-    inverseIdx = Dict{Int, eltype(nodeList)}();
+    nodenames = Vector{eltype(nodeList)}();
 
     # assign a unique integer id to nodes
     idx = 1;
     for i in nodeList
         if !haskey(Idx, i)
             Idx[i] = idx;
+            push!(nodenames, i);
             idx += 1;
         end
     end
-
-    inverseIdx = Dict(value => key for (key, value) in Idx);
-
-    nodenames = [inverseIdx[i] for i in 1:length(inverseIdx)];
+      
     append!(N.nodenames, nodenames);
 
     A = zeros(length(nodeList), length(nodeList));
@@ -133,7 +134,7 @@ Non-homogeneous fitness and complexity algorithm.\n
 Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
 and delivers the fitness centrality.
 """
-function symmetricNHEFC(A::Matrix{T}; δ::Float64=1e-2, ϵ::Float64=1e-2) where T <:Real
+function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
     @info "Calculating fitness centrality in the undirected case";
 
     c,p = size(A);

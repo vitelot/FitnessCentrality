@@ -5,7 +5,7 @@ include("functions.jl");
 function main(args::Vector{String})
 
     if length(args) < 1
-        @error("Please provide the name of the file containing the edge list of the network, e.g., networks/star.net");
+        @error("Please provide the name of the file containing the edge list of the network, e.g., networks/star-wheel.net");
         exit();
     end
     filein = args[1];
