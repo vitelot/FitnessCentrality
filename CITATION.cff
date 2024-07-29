@@ -6,7 +6,6 @@ authors:
     orcid: https://orcid.org/0000-0003-3221-5973
 title: "A non-optimized Julia code to estimate fitness centrality in networks"
 version: 0.1.0
-identifiers:
-  - type: doi
-    value: xxx
 date-released: 2024-07-29
+license: GPL-3.0
+repository-code: https://github.com/vitelot/FitnessCentrality
