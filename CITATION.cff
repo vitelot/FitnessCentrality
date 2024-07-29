@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Servedio
+    given-names: Vito D. P.
+    orcid: https://orcid.org/0000-0003-3221-5973
+title: "A non-optimized Julia code to estimate fitness centrality in networks"
+version: 0.1.0
+identifiers:
+  - type: doi
+    value: xxx
+date-released: 2024-07-29
