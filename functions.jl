@@ -128,6 +128,14 @@ function network2matrix(N::Network)
     return A;
 end
 
+function U(A::Matrix{T}, V::Vector{T}, δ::Float64) where T <: Real
+    invV = inv.(V);
+    interaction = 0.5 * transpose(invV) * A * invV;
+    logterm = sum(log.(V));
+    deltaterm = δ * sum(invV);
+
+    return interaction + logterm + deltaterm;
+end
 
 """
 Non-homogeneous fitness and complexity algorithm.\n
@@ -149,6 +157,9 @@ function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) wh
         err = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
         # @info err
         F0 = copy(F1);
+        
+        println("#U# $nr_of_iterations $(U(A,F1,δ))" );
+
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
         end
