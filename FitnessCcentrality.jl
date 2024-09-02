@@ -24,6 +24,8 @@ function main(args::Vector{String})
         df = DataFrame(node=N.nodenames, fitness_out = Fout, fitness_in = Fin);
     else
         F = symmetricNHEFC(A);
+        # F = twostepSymmetricNHEFC(A);
+        # F = symmetricGradientNHEFC(A);
         df = DataFrame(node=N.nodenames, fitness = F);
     end
 

@@ -41,7 +41,7 @@ function readNetwork(filein::String)
 
     println("Assuming the first two columns are node ids");
 
-    print("Is the network directed [y/N]? ");
+    print(stderr, "Is the network directed [y/N]? ");
 
     DIRECTED = false;
     WEIGHTED = false;
@@ -49,10 +49,10 @@ function readNetwork(filein::String)
     answer = readline();
 
     if answer == "y" || answer == "Y"
-        println("Considering the network as directed");
+        println(stderr,"Considering the network as directed");
         DIRECTED = true;
     else
-        println("Considering the network as undirected");
+        println(stderr,"Considering the network as undirected");
     end
 
     if ncolumns == 2 
@@ -150,15 +150,17 @@ function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) wh
     nr_of_iterations::Int = 0;
 
     F0 = ones(T,c);
-    F1 = ones(T,c);
+    #F0 = δ .+ A  * ones(T,c);
+    #F1 = ones(T,c);
     while err>ϵ
         nr_of_iterations += 1;
+        # F00 = δ .+ A  * inv.(F0);
         F1 = δ .+ A  * inv.(F0);
         err = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
         # @info err
         F0 = copy(F1);
         
-        println("#U# $nr_of_iterations $(U(A,F1,δ))" );
+        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
@@ -167,7 +169,77 @@ function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) wh
 
     println("The algorithm converged in $nr_of_iterations steps");
     
-    F1
+    F0
+end
+
+"""
+Non-homogeneous fitness and complexity algorithm.\n
+Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
+and delivers the fitness centrality.\n
+To avoid oscillations it moves two steps a time.
+"""
+function twostepSymmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
+    @info "Calculating fitness centrality in the undirected case";
+
+    c,p = size(A);
+    err::Float64 = 1000.0;
+    nr_of_iterations::Int = 0;
+
+    #F0 = ones(T,c);
+    F0 = δ .+ A  * ones(T,c);
+    #F1 = ones(T,c);
+    while err>ϵ
+        nr_of_iterations += 1;
+        F00 = δ .+ A  * inv.(F0);
+        F1 = δ .+ A  * inv.(F00);
+        err = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
+        # @info err
+        F0 = copy(F1);
+        
+        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
+
+        if nr_of_iterations%1000 == 0
+            println("Iteration: $nr_of_iterations -- RelativeError: $err");
+        end
+    end
+
+    println("The algorithm converged in $nr_of_iterations steps");
+    
+    F0
+end
+
+"""
+Non-homogeneous fitness and complexity algorithm.\n
+Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
+and delivers the fitness centrality.\n
+It uses the gradient of the potential energy.
+"""
+function symmetricGradientNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
+    @info "Calculating fitness centrality in the undirected case";
+
+    c,p = size(A);
+    err::Float64 = 1000.0;
+    nr_of_iterations::Int = 0;
+
+    Z0 = zeros(T,c);
+    while err>ϵ
+        nr_of_iterations += 1;
+        EZ0 = exp.(Z0);
+        Z1 = 1 .+ Z0 - δ .* EZ0 - EZ0 .* (A  * EZ0);
+        err = maximum(abs.( (Z1 ./ Z0) .- 1));
+        # @info err
+        Z0 = copy(Z1);
+        F1 = exp.(-Z1);
+        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
+
+        if nr_of_iterations%1000 == 0
+            println("Iteration: $nr_of_iterations -- RelativeError: $err");
+        end
+    end
+
+    println("The algorithm converged in $nr_of_iterations steps");
+    
+    exp.(-Z0)
 end
 
 """
