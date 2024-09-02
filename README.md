@@ -71,13 +71,13 @@ After completing these steps, your project environment is set up and ready to us
 Execute the program with the following command:
 
 ```
-julia --project FitnessComplexity.jl filename
+julia --project FitnessCentrality.jl filename
 ```
 
 Where `filename` is the path to the network file you want to analyze. For example:
 
 ```
-julia --project FitnessComplexity.jl networks/star-wheel.net
+julia --project FitnessCentrality.jl networks/star-wheel.net
 ```
 
 ### Directed Networks
