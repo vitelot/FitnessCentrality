@@ -26,3 +26,5 @@ Manifest.toml
 *.csv
 analysis.jl
 p?ppo
+*.png
+lameray_diagram.jl

@@ -20,7 +20,7 @@ Asks if the network is directed.
 Determines if the network is weighted. 
 The comment symbol in the file is % 
 """
-function readNetwork(filein::String)
+function readNetwork(filein::String, type::String="ask")
     @info "Reading the network";
 
     df = CSV.read(filein, comment="%", header=false, DataFrame);
@@ -41,18 +41,27 @@ function readNetwork(filein::String)
 
     println("Assuming the first two columns are node ids");
 
-    print(stderr, "Is the network directed [y/N]? ");
-
     DIRECTED = false;
     WEIGHTED = false;
 
-    answer = readline();
-
-    if answer == "y" || answer == "Y"
-        println(stderr,"Considering the network as directed");
+    if type == "directed"
         DIRECTED = true;
+    elseif type == "undirected"
+        DIRECTED = false;
+    elseif type == "ask"
+        print(stderr, "Is the network directed [y/N]? ");
+
+        answer = readline();
+
+        if answer == "y" || answer == "Y"
+            println(stderr,"Considering the network as directed");
+            DIRECTED = true;
+        else
+            println(stderr,"Considering the network as undirected");
+        end
     else
-        println(stderr,"Considering the network as undirected");
+        @error("Unknown $type network type");
+        exit(1);
     end
 
     if ncolumns == 2 
@@ -142,14 +151,24 @@ Non-homogeneous fitness and complexity algorithm.\n
 Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
 and delivers the fitness centrality.
 """
-function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
-    @info "Calculating fitness centrality in the undirected case";
+function symmetricNHEFC(A::Matrix{T}; 
+            δ::Float64=DELTA, ϵ::Float64=EPSILON, 
+            printpotential::Bool=false, randominit::Bool=false,
+            fp::IOStream=stdout
+            )::Vector{T} where T <:Real
+    
+            @info "Calculating fitness centrality in the undirected case";
 
     c,p = size(A);
     err::Float64 = 1000.0;
     nr_of_iterations::Int = 0;
 
-    F0 = ones(T,c);
+    randomID = rand('A':'Z', 6) |> String;
+    if randominit
+        F0 = rand(c) ./ δ;
+    else
+        F0 = ones(c);
+    end
     #F0 = δ .+ A  * ones(T,c);
     #F1 = ones(T,c);
     while err>ϵ
@@ -160,7 +179,7 @@ function symmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) wh
         # @info err
         F0 = copy(F1);
         
-        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
+        printpotential && println(fp,"#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
