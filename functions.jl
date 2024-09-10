@@ -154,10 +154,9 @@ and delivers the fitness centrality.
 function symmetricNHEFC(A::Matrix{T}; 
             δ::Float64=DELTA, ϵ::Float64=EPSILON, 
             printpotential::Bool=false, randominit::Bool=false,
-            fp::IOStream=stdout
-            )::Vector{T} where T <:Real
+        )::Vector{T} where T <:Real
     
-            @info "Calculating fitness centrality in the undirected case";
+    @info "Using the plain symmetric algorithm";
 
     c,p = size(A);
     err::Float64 = 1000.0;
@@ -169,17 +168,16 @@ function symmetricNHEFC(A::Matrix{T};
     else
         F0 = ones(c);
     end
-    #F0 = δ .+ A  * ones(T,c);
-    #F1 = ones(T,c);
+
     while err>ϵ
         nr_of_iterations += 1;
-        # F00 = δ .+ A  * inv.(F0);
+      
         F1 = δ .+ A  * inv.(F0);
         err = maximum(abs.( (F1 ./ F0) .- 1)); #maximum(abs.(vcat(F1-F0, S1-S0)));
         # @info err
         F0 = copy(F1);
         
-        printpotential && println(fp,"#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
+        printpotential && println("#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
@@ -197,16 +195,24 @@ Takes the symmetric matrix A, the inhomogeneous term δ and the required final r
 and delivers the fitness centrality.\n
 To avoid oscillations it moves two steps a time.
 """
-function twostepSymmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
-    @info "Calculating fitness centrality in the undirected case";
+function twostepSymmetricNHEFC(A::Matrix{T}; 
+        δ::Float64=DELTA, ϵ::Float64=EPSILON, 
+        printpotential::Bool=false, randominit::Bool=false
+    )::Vector{T} where T <:Real
 
+    @info "Using the two step algorithm";
     c,p = size(A);
     err::Float64 = 1000.0;
     nr_of_iterations::Int = 0;
 
-    #F0 = ones(T,c);
-    F0 = δ .+ A  * ones(T,c);
-    #F1 = ones(T,c);
+    randomID = rand('A':'Z', 6) |> String;
+    if randominit
+        F0 = rand(c) ./ δ;
+    else
+        F0 = ones(c);
+    end
+
+    F0 = δ .+ A  * inv.(F0);
     while err>ϵ
         nr_of_iterations += 1;
         F00 = δ .+ A  * inv.(F0);
@@ -215,7 +221,7 @@ function twostepSymmetricNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSI
         # @info err
         F0 = copy(F1);
         
-        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
+        printpotential && println("#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
@@ -231,16 +237,27 @@ end
 Non-homogeneous fitness and complexity algorithm.\n
 Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
 and delivers the fitness centrality.\n
-It uses the gradient of the potential energy.
+It uses the gradient of the potential energy using the variable Z = -log(V)
 """
-function symmetricGradientNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPSILON) where T <:Real
-    @info "Calculating fitness centrality in the undirected case";
+function symmetricGradientNHEFC(A::Matrix{T}; 
+            δ::Float64=DELTA, ϵ::Float64=EPSILON, 
+            printpotential::Bool=false, randominit::Bool=false
+    )::Vector{T} where T <:Real
+    
+    
+    @info "Using the gradient map in Z";
 
     c,p = size(A);
     err::Float64 = 1000.0;
     nr_of_iterations::Int = 0;
 
-    Z0 = zeros(T,c);
+    randomID = rand('A':'Z', 6) |> String;
+    if randominit
+        Z0 = -log.(rand(c) ./ δ);
+    else
+        Z0 = zeros(c);
+    end
+
     while err>ϵ
         nr_of_iterations += 1;
         EZ0 = exp.(Z0);
@@ -249,7 +266,7 @@ function symmetricGradientNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPS
         # @info err
         Z0 = copy(Z1);
         F1 = exp.(-Z1);
-        println("#U# $nr_of_iterations $(U(A,F1,δ)) $err" );
+        printpotential && println("#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
@@ -259,6 +276,51 @@ function symmetricGradientNHEFC(A::Matrix{T}; δ::Float64=DELTA, ϵ::Float64=EPS
     println("The algorithm converged in $nr_of_iterations steps");
     
     exp.(-Z0)
+end
+
+"""
+Non-homogeneous fitness and complexity algorithm.\n
+Takes the symmetric matrix A, the inhomogeneous term δ and the required final relative error ϵ
+and delivers the fitness centrality.\n
+It uses the gradient of the potential energy using the variable V
+"""
+function symmetricDirectGradientNHEFC(A::Matrix{T}; 
+            δ::Float64=DELTA, ϵ::Float64=EPSILON, 
+            printpotential::Bool=false, randominit::Bool=false
+    )::Vector{T} where T <:Real
+
+    @info "Using the gradient map in V";
+
+    c,p = size(A);
+    err::Float64 = 1000.0;
+    nr_of_iterations::Int = 0;
+
+    randomID = rand('A':'Z', 6) |> String;
+    if randominit
+        V0 = rand(c) ./ δ;
+    else
+        V0 = ones(c);
+    end
+
+    while err>ϵ
+        nr_of_iterations += 1;
+        V0_inv = inv.(V0);
+        V1 = V0 .* exp.(-1 .+ (V0_inv .* (δ .+ A*V0_inv)));
+        
+        # err = abs( (U(A,V0,δ) / U(A,V1,δ)) - 1);
+        err = maximum(abs.( (V1 ./ V0) .- 1));
+        # @info err
+        V0 = copy(V1);
+        printpotential && println("#$randomID# $nr_of_iterations $(U(A,V0,δ)) $err" );
+
+        if nr_of_iterations%1000 == 0
+            println("Iteration: $nr_of_iterations -- RelativeError: $err");
+        end
+    end
+
+    println("The algorithm converged in $nr_of_iterations steps");
+    
+    V0
 end
 
 """

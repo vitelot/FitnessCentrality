@@ -1,5 +1,6 @@
 @info "Loading libraries and possibly one-time compiling";
 using DataFrames, CSV;
+using BenchmarkTools;
 include("functions.jl");
 
 function main(args::Vector{String})
@@ -23,9 +24,11 @@ function main(args::Vector{String})
         Fout, Fin = asymmetricNHEFC(A);
         df = DataFrame(node=N.nodenames, fitness_out = Fout, fitness_in = Fin);
     else
-        F = symmetricNHEFC(A);
-        # F = twostepSymmetricNHEFC(A);
+        @info "Calculating fitness centrality in the undirected case";
+        # F = symmetricNHEFC(A);
+        F = twostepSymmetricNHEFC(A);
         # F = symmetricGradientNHEFC(A);
+        # F = symmetricDirectGradientNHEFC(A);
         df = DataFrame(node=N.nodenames, fitness = F);
     end
 
