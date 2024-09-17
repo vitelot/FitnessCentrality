@@ -154,9 +154,16 @@ and delivers the fitness centrality.
 function symmetricNHEFC(A::Matrix{T}; 
             δ::Float64=DELTA, ϵ::Float64=EPSILON, 
             printpotential::Bool=false, randominit::Bool=false,
+            outputonfile::Bool=false,
         )::Vector{T} where T <:Real
     
     @info "Using the plain symmetric algorithm";
+
+    if outputonfile
+        OUT = open("output.csv","a");
+    else
+        OUT = stdout;
+    end
 
     c,p = size(A);
     err::Float64 = 1000.0;
@@ -177,12 +184,14 @@ function symmetricNHEFC(A::Matrix{T};
         # @info err
         F0 = copy(F1);
         
-        printpotential && println("#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
+        printpotential && println(OUT, "#$randomID# $nr_of_iterations $(U(A,F1,δ)) $err" );
 
         if nr_of_iterations%1000 == 0
             println("Iteration: $nr_of_iterations -- RelativeError: $err");
         end
     end
+    
+    outputonfile && close(OUT);
 
     println("The algorithm converged in $nr_of_iterations steps");
     
